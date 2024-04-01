@@ -1,14 +1,15 @@
 {
-  "name": "expressjs-with-mongoose",
+  "name": "csc308-expressjs-with-mongoose",
   "version": "1.0.0",
   "description": "A sample backend for our class app with database access (MongoDB) using Mongoose.",
   "main": "backend_with_db.js",
+  "type": "module",
   "scripts": {
     "test": "prettier --check .",
     "dev": "nodemon backend_with_db.js",
     "start": "node backend_with_db.js"
   },
-  "author": "Dr. da Silva",
+  "author": "BJ Klingenberg",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.1",

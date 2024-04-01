@@ -1,16 +1,15 @@
-const mongoose = require("mongoose");
-const UserSchema = require("./user");
-const dotenv = require("dotenv");
+import mongoose from "mongoose";
+import UserSchema from "./user.js";
+import dotenv from "dotenv";
 dotenv.config();
-
 
 let dbConnection;
 
 function getDbConnection() {
   if (!dbConnection) {
     dbConnection = mongoose.createConnection(process.env.MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     });
   }
   return dbConnection;
@@ -32,7 +31,7 @@ async function getUsers(name, job) {
 }
 
 async function findUserById(id) {
-  const userModel = getDbConnection().model("User", UserSchema);     
+  const userModel = getDbConnection().model("User", UserSchema);
   try {
     return await userModel.findById(id);
   } catch (error) {
@@ -55,17 +54,17 @@ async function addUser(user) {
 }
 
 async function findUserByName(name) {
-  const userModel = getDbConnection().model("User", UserSchema);       
+  const userModel = getDbConnection().model("User", UserSchema);
   return await userModel.find({ name: name });
 }
 
 async function findUserByJob(job) {
-  const userModel = getDbConnection().model("User", UserSchema);       
+  const userModel = getDbConnection().model("User", UserSchema);
   return await userModel.find({ job: job });
 }
 
-module.exports = {
+export default {
   getUsers,
   findUserById,
-  addUser
-}
+  addUser,
+};

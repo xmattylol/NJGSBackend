@@ -1,26 +1,28 @@
-const express = require("express");
-const cors = require("cors");
-const bcrypt = require("bcrypt");
-const jwt = require('jsonwebtoken');
+import express from "express";
+import cors from "cors";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
-const userServices = require("./models/user-services");
+import userServices from "./models/user-services.js";
 
 const app = express();
-const port = 5000;
+const port = 8000;
 
 app.use(cors());
 app.use(express.json());
 
-const fakeUser = {username: "", pwd: ""};
+const fakeUser = { username: "", pwd: "" };
 
 function generateAccessToken(username) {
-  return jwt.sign({"username": username}, process.env.TOKEN_SECRET, { expiresIn: "60s" });
+  return jwt.sign({ username: username }, process.env.TOKEN_SECRET, {
+    expiresIn: "600s",
+  });
 }
 
 app.post("/login", async (req, res) => {
   const username = req.body.username;
   const pwd = req.body.pwd;
-  // Call a model function to retrieve an existing user based on username 
+  // Call a model function to retrieve an existing user based on username
   //  (or any other unique identifier such as email if that applies to your app)
   // Using our fake user for demo purposes
   const retrievedUser = fakeUser;
@@ -38,12 +40,14 @@ app.post("/login", async (req, res) => {
     //Unauthorized due to invalid username
     res.status(401).send("Unauthorized");
   }
-}); 
+});
 
 app.post("/signup", async (req, res) => {
   const username = req.body.username;
-  const userPwd = req.body.pwd; 
-  if (!username && !pwd) {
+  const userPwd = req.body.pwd;
+  const userPwdValidate = req.body.pwdValidate;
+  console.log("signup body:", req.body);
+  if (!username && !userPwd) {
     res.status(400).send("Bad request: Invalid input data.");
   } else {
     if (username === fakeUser.username) {
@@ -59,15 +63,16 @@ app.post("/signup", async (req, res) => {
       */
       // Also, you can pull this salt param from an env variable
       const salt = await bcrypt.genSalt(10);
-      // On the database you never store the user input pwd. 
+      // On the database you never store the user input pwd.
       // So, let's hash it:
       const hashedPWd = await bcrypt.hash(userPwd, salt);
       // Now, call a model function to store the username and hashedPwd (a new user)
       // For demo purposes, I'm skipping the model piece, and assigning the new user to this fake obj
       fakeUser.username = username;
       fakeUser.pwd = hashedPWd;
-      
+
       const token = generateAccessToken(username);
+      console.log("signup token:", token);
       res.status(201).send(token);
     }
   }
@@ -78,7 +83,7 @@ app.post("/signup", async (req, res) => {
 function authenticateUser(req, res, next) {
   const authHeader = req.headers["authorization"];
   //Getting the 2nd part of the auth hearder (the token)
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
     console.log("No token received");
@@ -90,13 +95,13 @@ function authenticateUser(req, res, next) {
     try {
       // verify() returns the decoded obj which includes whatever objs
       // we use to code/sign the token
-      const decoded = jwt.verify(token, process.env.TOKEN_SECRET);   
+      const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
       // in our case, we used the username to sign the token
       console.log(decoded);
       next();
     } catch (error) {
       console.log(error);
-      return res.status(401).end();  
+      return res.status(401).end();
     }
   }
 }
@@ -137,5 +142,7 @@ app.post("/users", async (req, res) => {
 });
 
 app.listen(process.env.PORT || port, () => {
-  console.log("REST API is listening.");
+  if (process.env.PORT) {
+    console.log(`REST API is listening on port: ${process.env.PORT}.`);
+  } else console.log(`REST API is listening on port: ${port}.`);
 });
