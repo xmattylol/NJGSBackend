@@ -46,7 +46,6 @@ app.post("/signup", async (req, res) => {
   const username = req.body.username;
   const userPwd = req.body.pwd;
   const userPwdValidate = req.body.pwdValidate;
-  console.log("signup body:", req.body);
   if (!username && !userPwd) {
     res.status(400).send("Bad request: Invalid input data.");
   } else {
@@ -72,7 +71,6 @@ app.post("/signup", async (req, res) => {
       fakeUser.pwd = hashedPWd;
 
       const token = generateAccessToken(username);
-      console.log("signup token:", token);
       res.status(201).send(token);
     }
   }
