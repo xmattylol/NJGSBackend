@@ -64,13 +64,14 @@ app.post("/signup", async (req, res) => {
       const salt = await bcrypt.genSalt(10);
       // On the database you never store the user input pwd.
       // So, let's hash it:
-      const hashedPWd = await bcrypt.hash(userPwd, salt);
+      const hashedPwd = await bcrypt.hash(userPwd, salt);
       // Now, call a model function to store the username and hashedPwd (a new user)
       // For demo purposes, I'm skipping the model piece, and assigning the new user to this fake obj
       fakeUser.username = username;
-      fakeUser.pwd = hashedPWd;
+      fakeUser.pwd = hashedPwd;
 
       const token = generateAccessToken(username);
+      console.log("JWT: ", token);
       res.status(201).send(token);
     }
   }
@@ -95,7 +96,7 @@ function authenticateUser(req, res, next) {
       // we use to code/sign the token
       const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
       // in our case, we used the username to sign the token
-      console.log(decoded);
+      console.log("Decoded token: ", decoded);
       next();
     } catch (error) {
       console.log(error);
