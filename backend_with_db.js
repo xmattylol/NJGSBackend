@@ -140,6 +140,8 @@ app.post("/users", async (req, res) => {
   else res.status(500).end();
 });
 
+//app.delete
+
 app.listen(process.env.PORT || port, () => {
   if (process.env.PORT) {
     console.log(`REST API is listening on port: ${process.env.PORT}.`);
