@@ -1,4 +1,4 @@
-const appModule = require("./backend_with_db");
+const appModule = require("./backend_with_db.js");
 const supertest = require("supertest");
 const database = require("./database");
 // const mongoose = require("mongoose");

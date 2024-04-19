@@ -140,7 +140,20 @@ app.post("/users", async (req, res) => {
   else res.status(500).end();
 });
 
-//app.delete
+app.delete("/users/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const deletedUser = await userServices.deleteUserById(id);
+    if (deletedUser) {
+      res.sendStatus(204); // Send a success status code (No Content) if the user is successfully deleted
+    } else {
+      res.sendStatus(404); // Send a not found status code if the user with the specified ID does not exist
+    }
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.sendStatus(500); // Send a server error status code if an error occurs during deletion
+  }
+});
 
 app.listen(process.env.PORT || port, () => {
   if (process.env.PORT) {

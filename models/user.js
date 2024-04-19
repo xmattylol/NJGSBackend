@@ -7,13 +7,17 @@ const UserSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    job: {
+    Classes: {
       type: String,
       required: true,
       trim: true,
       validate(value) {
         if (value.length < 2) throw new Error("Invalid job.");
       },
+    },
+    RoomNumbers: {
+      type: String,
+      trim: true,
     },
   },
   { collection: "users_list" }

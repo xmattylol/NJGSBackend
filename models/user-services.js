@@ -15,17 +15,17 @@ function getDbConnection() {
   return dbConnection;
 }
 
-async function getUsers(name, job) {
+async function getUsers(name, Classes) {
   const userModel = getDbConnection().model("User", UserSchema);
   let result;
-  if (name === undefined && job === undefined) {
+  if (name === undefined && Classes === undefined) {
     result = await userModel.find();
-  } else if (name && job === undefined) {
+  } else if (name && Classes === undefined) {
     result = await findUserByName(name);
-  } else if (job && name === undefined) {
-    result = await findUserByJob(job);
+  } else if (Classes && name === undefined) {
+    result = await findUserByClasses(Classes);
   } else {
-    result = await findUserByNameAndJob(name, job);
+    result = await findUserByNameAndClasses(name, Classes);
   }
   return result;
 }
@@ -58,13 +58,25 @@ async function findUserByName(name) {
   return await userModel.find({ name: name });
 }
 
-async function findUserByJob(job) {
+async function findUserByClasses(Classes) {
   const userModel = getDbConnection().model("User", UserSchema);
-  return await userModel.find({ job: job });
+  return await userModel.find({ Classes: Classes });
+}
+
+async function deleteUserById(id) {
+  const userModel = getDbConnection().model("User", UserSchema);
+  try {
+    const deletedUser = await userModel.findByIdAndDelete(id);
+    return deletedUser;
+  } catch (error) {
+    console.error("Error deleting user by ID:", error);
+    return null;
+  }
 }
 
 export default {
   getUsers,
   findUserById,
   addUser,
+  deleteUserById, 
 };
