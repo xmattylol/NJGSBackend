@@ -1,9 +1,9 @@
-const appModule = require("./backend_with_db.js");
-const supertest = require("supertest");
-const database = require("./database");
+import appModule from "./backend_with_db.js";
+import supertest from "supertest";
+import database from "./database.js";
 // const mongoose = require("mongoose");
-const UserSchema = require("./models/user");
-const userServices = require("./models/user-services");
+import UserSchema from "./models/user.js";
+import userServices from "./models/user-services.js";
 
 /**
  * This is an example of API Testing.
