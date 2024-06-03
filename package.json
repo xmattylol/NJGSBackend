@@ -7,22 +7,24 @@
   "scripts": {
     "test": "jest",
     "dev": "nodemon backend_with_db.js",
-    "start": "node backend_with_db.js"
+    "start": "node backend_with_db.js",
+    "test_e2e_interactive": "npx cypress open"
   },
   "author": "BJ Klingenberg",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
+    "cypress": "^13.10.0",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "jest": "^29.7.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.3",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^2.0.12",
     "prettier": "2.4.1",
     "supertest": "^6.3.4"
