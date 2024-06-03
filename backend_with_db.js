@@ -26,7 +26,7 @@ function generateAccessToken(username) {
 // Middleware to validate request body for signup
 const validateSignup = [
   body('username').isString().withMessage('Username must be a string').trim().escape(),
-  body('pwd').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+  body('pwd').isLength({ min: 3 }).withMessage('Password must be at least 3 characters long'),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
