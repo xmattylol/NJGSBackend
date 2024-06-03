@@ -2,11 +2,15 @@ import express from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import { body, validationResult } from "express-validator";
+import buildingRoutes from './routes/buildings.js';
 import userServices from "./models/user-services.js";
 
+dotenv.config();
 const app = express();
-const port = 8000;
+const port = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
@@ -18,6 +22,19 @@ function generateAccessToken(username) {
     expiresIn: "600s",
   });
 }
+
+// Middleware to validate request body for signup
+const validateSignup = [
+  body('username').isString().withMessage('Username must be a string').trim().escape(),
+  body('pwd').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  }
+];
 
 app.post("/login", async (req, res) => {
   const username = req.body.username;
@@ -42,7 +59,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.post("/signup", async (req, res) => {
+app.post("/signup", validateSignup, async (req, res) => {
   const username = req.body.username;
   const userPwd = req.body.pwd;
   const userPwdValidate = req.body.pwdValidate;
@@ -155,8 +172,54 @@ app.delete("/users/:id", async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT || port, () => {
-  if (process.env.PORT) {
-    console.log(`REST API is listening on port: ${process.env.PORT}.`);
-  } else console.log(`REST API is listening on port: ${port}.`);
+// Use the building routes
+app.use('/api/buildings', buildingRoutes);
+
+app.listen(port, () => {
+  console.log(`REST API is listening on port: ${port}.`);
 });
+
+// Connect to MongoDB and populate initial data
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('MongoDB connected');
+    await createInitialData();
+  } catch (error) {
+    console.error('Error connecting to MongoDB', error);
+    process.exit(1);
+  }
+};
+
+const createInitialData = async () => {
+  const Building = mongoose.model('Building');
+  const buildings = [
+    {
+      name: 'Building 1',
+      location: { longitude: -120.65, latitude: 35.3 },
+      amenities: ['Library', 'Cafe'],
+      floors: [
+        {
+          number: 1,
+          rooms: [
+            { name: 'Room 101', coordinates: { longitude: -120.65, latitude: 35.3 }, floor: 1, occupancy: false },
+            { name: 'Room 102', coordinates: { longitude: -120.651, latitude: 35.301 }, floor: 1, occupancy: true },
+          ],
+        },
+      ],
+    },
+  ];
+
+  try {
+    await Building.deleteMany();
+    await Building.insertMany(buildings);
+    console.log('Buildings added');
+  } catch (error) {
+    console.error('Error adding buildings', error);
+  }
+};
+
+connectDB();
