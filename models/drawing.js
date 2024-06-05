@@ -1,4 +1,4 @@
-/*
+
 
 A failed attempt at adding saving
 
@@ -14,5 +14,5 @@ const DrawingSchema = new mongoose.Schema({
 const Drawing = mongoose.model('Drawing', DrawingSchema);
 
 export default Drawing;
-*/ 
+
 

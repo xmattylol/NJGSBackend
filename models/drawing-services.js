@@ -1,4 +1,3 @@
-/* A failed attempt at adding saving
 
 import Drawing from './drawing.js';
 
@@ -20,4 +19,3 @@ const updateDrawing = async (userId, pdfUrl, pageNumber, drawing) => {
 };
 
 export default { addDrawing, getDrawings, updateDrawing };
-*/

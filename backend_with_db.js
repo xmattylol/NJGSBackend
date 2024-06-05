@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import userServices from './models/user-services.js';
-import DrawingServices from './models/drawing-services.js'; // Import drawing services
+//import DrawingServices from './models/drawing-services.js'; // Import drawing services
 
 dotenv.config();
 
@@ -56,37 +56,7 @@ app.post('/signup', async (req, res) => {
   res.status(201).send(token);
 });
 
-app.post('/drawings', async (req, res) => {
-  const { userId, pdfUrl, pageNumber, drawing } = req.body;
-  if (!userId || !pdfUrl || pageNumber === undefined || !drawing) {
-    return res.status(400).send('Bad request: Invalid input data.');
-  }
-  try {
-    const drawingData = {
-      userId,
-      pdfUrl,
-      pageNumber,
-      drawing,
-    };
-    const savedDrawing = await DrawingServices.addDrawing(drawingData);
-    res.status(201).send(savedDrawing);
-  } catch (error) {
-    res.status(500).send('Error saving drawing');
-  }
-});
 
-app.get('/drawings', async (req, res) => {
-  const { userId, pdfUrl } = req.query;
-  if (!userId || !pdfUrl) {
-    return res.status(400).send('Bad request: Invalid input data.');
-  }
-  try {
-    const drawings = await DrawingServices.getDrawings(userId, pdfUrl);
-    res.status(200).send(drawings);
-  } catch (error) {
-    res.status(500).send('Error retrieving drawings');
-  }
-});
 
 function authenticateUser(req, res, next) {
   const authHeader = req.headers['authorization'];
