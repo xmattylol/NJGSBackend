@@ -1,13 +1,14 @@
-import express from 'express';
-import cors from 'cors';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-import userServices from './models/user-services.js';
-//import DrawingServices from './models/drawing-services.js'; // Import drawing services
+import express from "express";
+import cors from "cors";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import { body, validationResult } from "express-validator";
+import buildingRoutes from './routes/buildings.js';
+import userServices from "./models/user-services.js";
 
 dotenv.config();
-
 const app = express();
 const port = process.env.PORT || 8000;
 
@@ -22,8 +23,25 @@ function generateAccessToken(username) {
   });
 }
 
-app.post('/login', async (req, res) => {
-  const { username, pwd } = req.body;
+// Middleware to validate request body for signup
+const validateSignup = [
+  body('username').isString().withMessage('Username must be a string').trim().escape(),
+  body('pwd').isLength({ min: 3 }).withMessage('Password must be at least 3 characters long'),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  }
+];
+
+app.post("/login", async (req, res) => {
+  const username = req.body.username;
+  const pwd = req.body.pwd;
+  // Call a model function to retrieve an existing user based on username
+  //  (or any other unique identifier such as email if that applies to your app)
+  // Using our fake user for demo purposes
   const retrievedUser = fakeUser;
   if (retrievedUser.username && retrievedUser.pwd) {
     const isValid = await bcrypt.compare(pwd, retrievedUser.pwd);
@@ -38,18 +56,33 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/signup', async (req, res) => {
-  const { username, pwd, pwdValidate } = req.body;
-  if (!username || !pwd) {
-    return res.status(400).send('Bad request: Invalid input data.');
-  }
-  if (username === fakeUser.username) {
-    return res.status(409).send('Username already taken');
-  }
-  const salt = await bcrypt.genSalt(10);
-  const hashedPwd = await bcrypt.hash(pwd, salt);
-  fakeUser.username = username;
-  fakeUser.pwd = hashedPwd;
+app.post("/signup", validateSignup, async (req, res) => {
+  const username = req.body.username;
+  const userPwd = req.body.pwd;
+  const userPwdValidate = req.body.pwdValidate;
+  if (!username && !userPwd) {
+    res.status(400).send("Bad request: Invalid input data.");
+  } else {
+    if (username === fakeUser.username) {
+      //Conflicting usernames. Assuming it's not allowed, then:
+      res.status(409).send("Username already taken");
+    } else {
+      // generate salt to hash password
+      /* Made up of random bits added to each password instance before its hashing. 
+      Salts create unique passwords even in the instance of two users choosing the 
+      same passwords. Salts help us mitigate hash table attacks by forcing attackers 
+      to re-compute them using the salts for each user.
+      More info: https://auth0.com/blog/adding-salt-to-hashing-a-better-way-to-store-passwords/
+      */
+      // Also, you can pull this salt param from an env variable
+      const salt = await bcrypt.genSalt(10);
+      // On the database you never store the user input pwd.
+      // So, let's hash it:
+      const hashedPwd = await bcrypt.hash(userPwd, salt);
+      // Now, call a model function to store the username and hashedPwd (a new user)
+      // For demo purposes, I'm skipping the model piece, and assigning the new user to this fake obj
+      fakeUser.username = username;
+      fakeUser.pwd = hashedPwd;
 
   const token = generateAccessToken(username);
   console.log('JWT: ', token);
@@ -124,6 +157,54 @@ app.delete('/users/:id', async (req, res) => {
   }
 });
 
+// Use the building routes
+app.use('/api/buildings', buildingRoutes);
+
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`REST API is listening on port: ${port}.`);
 });
+
+// Connect to MongoDB and populate initial data
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('MongoDB connected');
+    await createInitialData();
+  } catch (error) {
+    console.error('Error connecting to MongoDB', error);
+    process.exit(1);
+  }
+};
+
+const createInitialData = async () => {
+  const Building = mongoose.model('Building');
+  const buildings = [
+    {
+      name: 'Building 1',
+      location: { longitude: -120.65, latitude: 35.3 },
+      amenities: ['Library', 'Cafe'],
+      floors: [
+        {
+          number: 1,
+          rooms: [
+            { name: 'Room 101', coordinates: { longitude: -120.65, latitude: 35.3 }, floor: 1, occupancy: false },
+            { name: 'Room 102', coordinates: { longitude: -120.651, latitude: 35.301 }, floor: 1, occupancy: true },
+          ],
+        },
+      ],
+    },
+  ];
+
+  try {
+    await Building.deleteMany();
+    await Building.insertMany(buildings);
+    console.log('Buildings added');
+  } catch (error) {
+    console.error('Error adding buildings', error);
+  }
+};
+
+connectDB();
